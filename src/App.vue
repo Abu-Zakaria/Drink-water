@@ -1,18 +1,22 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view />
+  <div class="animate__animated animate__fadeIn">
+    <router-view />
+  </div>
 </template>
 
 <style>
+@import url("@/assets/css/skeleton.css");
+@import url("@/assets/css/custom.css");
+
+body {
+  background: #00293d;
+  color: #dfdfdf;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: Montserrat, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
 }
 
 nav {
