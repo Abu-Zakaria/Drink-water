@@ -202,6 +202,12 @@ export default {
           resetReminderTimer();
         }
       }, 1000);
+
+      Notification.requestPermission().then((result) => {
+        if (result == "granted") {
+          showNotification();
+        }
+      });
     };
 
     const resetReminderTimer = () => {
@@ -231,6 +237,80 @@ export default {
       window.localStorage.setItem("total_sips_taken", ++state.totalSipsTaken);
 
       resetReminderTimer();
+    };
+
+    const showNotification = () => {
+      const options = {
+        body: "klajsdkls",
+        icon: "/img/logo.png",
+        vibrate: [200, 100, 50, 10, 50],
+        actions: [
+          {
+            action: "took-a-sip",
+            title: "Took a sip",
+            type: "button",
+          },
+        ],
+      };
+      const title = "Time to take a sip";
+
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.showNotification(title, options);
+
+        // self.addEventListener("notificationclick", (event) => {
+        //   console.log("e", event);
+        //   clearAllNotifications();
+        // });
+
+        setTimeout(() => {
+          registration.getNotifications().then((notifications) => {
+            notifications.forEach((notification) => {
+              notification.onclick = () => {
+                console.log("Mon bhulay re");
+              };
+              notification.addEventListener("click", () => {
+                console.log("JJJ");
+              });
+              notification.addEventListener("onclick", () => {
+                console.log("KKK");
+              });
+            });
+          });
+        }, 2000);
+
+        self.addEventListener("notificationclick", (event) => {
+          console.log("E", event);
+          alert("QWE");
+        });
+
+        setTimeout(() => {
+          clearAllNotifications();
+        }, 29000);
+
+        // registration.getNotifications().then((notification) => {});
+      });
+
+      window.addEventListener("notificationclick", (e) => {
+        console.log("QWE");
+        if (!e.action) return;
+
+        switch (e.action) {
+          case "took-a-sip":
+            console.log("WQEEW");
+            tookASip();
+            break;
+        }
+      });
+    };
+
+    const clearAllNotifications = () => {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.getNotifications().then((notifications) => {
+          notifications.forEach((notification) => {
+            notification.close();
+          });
+        });
+      });
     };
 
     checkForStatus();
