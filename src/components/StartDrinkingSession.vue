@@ -35,10 +35,22 @@
       </p>
 
       <p>You've missed {{ state.missedReminders }} reminders.</p>
-      <p>You've drank {{ state.totalSipsTaken }} times.</p>
+      <p>You've drank {{ state.totalSipsTaken }} times</p>
     </div>
     <div v-if="state.stage == 3">
-      <p>Well Done</p>
+      <div class="align-center">
+        <h2>Well Done</h2>
+      </div>
+
+      <div class="align-center">
+        <p>In your last drinking session</p>
+      </div>
+      <div>
+        <h3 class="align-center">You drank {{ state.totalSipsTaken }} times</h3>
+        <h3 class="align-center">
+          You missed {{ state.missedReminders }} times
+        </h3>
+      </div>
     </div>
 
     <div v-if="state.sessionStatus == 'pending'">
@@ -81,8 +93,9 @@ export default {
       ),
       startingTime:
         Number(window.localStorage.getItem("starting_time")) ?? null,
-      missedReminders: null,
-      confirmedReminders: null,
+      missedReminders: Number(
+        window.localStorage.getItem("missed_reminders") ?? 0
+      ),
       timestampCursor: null,
       next_reminder_diff: null,
       timeoutForDrink: 30,
@@ -162,14 +175,18 @@ export default {
         window.localStorage.setItem("next_reminder", Number(new_next_reminder));
       }
 
-      state.missedReminders = reminder_passed - state.totalSipsTaken;
-      state.confirmedReminders = reminder_passed - state.missedReminders;
+      setMissedReminder(reminder_passed - state.totalSipsTaken);
 
       state.timestampCursor = now_ts;
 
       state.next_reminder_diff =
         Number(window.localStorage.getItem("next_reminder")) -
         state.timestampCursor;
+    };
+
+    const setMissedReminder = (times) => {
+      state.missedReminders = times;
+      window.localStorage.setItem("missed_reminders", state.missedReminders);
     };
 
     let reminderTimer = null;
@@ -181,6 +198,7 @@ export default {
       reminderTimer = setInterval(() => {
         if (state.timeoutForDrink-- <= 0) {
           state.tookSipBtnStatus = "missed";
+          setMissedReminder(++state.missedReminders);
           resetReminderTimer();
         }
       }, 1000);
