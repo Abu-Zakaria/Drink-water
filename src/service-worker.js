@@ -55,14 +55,12 @@ const getRandomQuote = () => {
     return quotes[randomIndex];
 }
 
+const timeout = 30000; // timeout for confirming that the user has taken a sip of drink
 const channel = new BroadcastChannel('drink-water');
 
 channel.onmessage = (message) => {
-    console.log('message:', message);
     if (message.data.action === "show-notification") {
-        console.log("processing notification")
         const quote = getRandomQuote();
-        console.log("selected quotes:", quote)
         const options = {
             body: quote,
             icon: "/img/logo.png",
@@ -81,13 +79,11 @@ channel.onmessage = (message) => {
 
         setTimeout(() => {
             channel.postMessage('clear-notifications');
-            console.log('clear-notifications')
         }, 29900);
     }
 }
 
 self.addEventListener('notificationclick', (event) => {
-    console.log('event', event);
     if (event.action == 'took-a-sip') {
         channel.postMessage({
             action: 'took-sip',
@@ -99,7 +95,7 @@ self.addEventListener('notificationclick', (event) => {
         type: "window"
     }).then((clientList) => {
         for (const client of clientList) {
-            if (client.url === '/' && 'focus' in client) {
+            if ('focus' in client) {
                 return client.focus();
             }
         }
