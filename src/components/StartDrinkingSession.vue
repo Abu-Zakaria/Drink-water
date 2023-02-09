@@ -107,6 +107,16 @@ export default {
       ? Number(state.startingTime) + 60 * 60
       : null;
 
+    const channel = new BroadcastChannel("drink-water");
+
+    channel.onmessage = (message) => {
+      if (message.data.action == "took-sip") {
+        tookASip();
+      } else if (message.data.action == "clear-notifications") {
+        clearAllNotifications();
+      }
+    };
+
     const startSession = () => {
       state.sessionStatus = "started";
 
@@ -237,70 +247,20 @@ export default {
       window.localStorage.setItem("total_sips_taken", ++state.totalSipsTaken);
 
       resetReminderTimer();
+
+      clearAllNotifications();
     };
 
     const showNotification = () => {
-      const options = {
-        body: "klajsdkls",
-        icon: "/img/logo.png",
-        vibrate: [200, 100, 50, 10, 50],
-        actions: [
-          {
-            action: "took-a-sip",
-            title: "Took a sip",
-            type: "button",
-          },
-        ],
-      };
-      const title = "Time to take a sip";
-
-      navigator.serviceWorker.ready.then((registration) => {
-        registration.showNotification(title, options);
-
-        // self.addEventListener("notificationclick", (event) => {
-        //   console.log("e", event);
-        //   clearAllNotifications();
-        // });
-
-        setTimeout(() => {
-          registration.getNotifications().then((notifications) => {
-            notifications.forEach((notification) => {
-              notification.onclick = () => {
-                console.log("Mon bhulay re");
-              };
-              notification.addEventListener("click", () => {
-                console.log("JJJ");
-              });
-              notification.addEventListener("onclick", () => {
-                console.log("KKK");
-              });
-            });
-          });
-        }, 2000);
-
-        self.addEventListener("notificationclick", (event) => {
-          console.log("E", event);
-          alert("QWE");
-        });
-
-        setTimeout(() => {
-          clearAllNotifications();
-        }, 29000);
-
-        // registration.getNotifications().then((notification) => {});
+      console.log("sending notification");
+      const channel = new BroadcastChannel("drink-water");
+      channel.postMessage({
+        action: "show-notification",
       });
 
-      window.addEventListener("notificationclick", (e) => {
-        console.log("QWE");
-        if (!e.action) return;
-
-        switch (e.action) {
-          case "took-a-sip":
-            console.log("WQEEW");
-            tookASip();
-            break;
-        }
-      });
+      setTimeout(() => {
+        clearAllNotifications();
+      }, 29900);
     };
 
     const clearAllNotifications = () => {
