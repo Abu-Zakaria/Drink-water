@@ -295,9 +295,6 @@ export default {
       const minutes = Math.floor(time / 60);
       const seconds = time - minutes * 60;
 
-      console.log("minutes: ", minutes);
-      console.log("seconds: ", seconds);
-
       let nextReminder = "";
       if (minutes > 0) {
         nextReminder += minutes + " minute";
