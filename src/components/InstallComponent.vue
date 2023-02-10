@@ -83,5 +83,6 @@ export default {
   background: #0aadff;
   color: white;
   border-radius: 8px;
+  user-select: none;
 }
 </style>
