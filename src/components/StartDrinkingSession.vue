@@ -91,8 +91,8 @@ export default {
     const state = reactive({
       sessionStatus: "stopped",
       stage: 1,
-      perSipDelay: 5, // minute
-      totalSipsPerSessions: 12,
+      perSipDelay: 0.5, // minute
+      totalSipsPerSessions: 5,
       sessionLength: null, // seconds
       totalSipsTaken: Number(
         window.localStorage.getItem("total_sips_taken") ?? 0
@@ -104,7 +104,7 @@ export default {
       ),
       timestampCursor: null,
       next_reminder_diff: null,
-      timeoutForDrink: 20, // seconds
+      timeoutForDrink: 5, // seconds
       tookSipBtnStatus: null,
       startClickSound: new Audio(
         require("@/assets/sounds/start-button-clicked.mp3")
@@ -113,7 +113,7 @@ export default {
         require("@/assets/sounds/notification-sound.mp3")
       ),
       defaults: {
-        timeoutForDrink: 20,
+        timeoutForDrink: 5,
       },
     });
     state.sessionLength = state.totalSipsPerSessions * state.perSipDelay * 60;
