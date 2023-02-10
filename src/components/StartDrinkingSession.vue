@@ -91,8 +91,8 @@ export default {
     const state = reactive({
       sessionStatus: "stopped",
       stage: 1,
-      perSipDelay: 2, // minute
-      totalSipsPerSessions: 5,
+      perSipDelay: 1, // minute
+      totalSipsPerSessions: 3,
       sessionLength: null, // seconds
       totalSipsTaken: Number(
         window.localStorage.getItem("total_sips_taken") ?? 0
@@ -125,8 +125,6 @@ export default {
     channel.onmessage = (message) => {
       if (message.data.action == "took-sip") {
         tookASip();
-      } else if (message.data.action == "clear-notifications") {
-        clearAllNotifications();
       }
     };
 
@@ -155,7 +153,7 @@ export default {
     };
 
     const checkForStatus = () => {
-      if (state.tookSipBtnStatus == "pending") return;
+      if (state.tookSipBtnStatus !== null) return;
       const now = moment();
 
       if (state.endingTime && Number(now.format("X")) > state.endingTime) {
@@ -270,7 +268,7 @@ export default {
 
       setTimeout(() => {
         clearAllNotifications();
-      }, state.defaults.timeoutForDrink);
+      }, state.defaults.timeoutForDrink * 1000);
     };
 
     const clearAllNotifications = () => {
@@ -346,12 +344,6 @@ export default {
 .start-button:focus {
   box-shadow: 0 0px 0px 15px rgba(13 172 254 / 45%);
 }
-
-/* #start_session_heading,
-#running_session_heading {
-  z-index: 3;
-  margin-top: 48px;
-} */
 
 #start_session_btn {
   z-index: 2;
