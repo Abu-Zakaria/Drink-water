@@ -80,6 +80,7 @@
 import { reactive } from "vue";
 import moment from "moment";
 import DrinkingSessionReport from "./DrinkingSessionReport.vue";
+import NotificationHandler from "@/utils/NotificationHandler";
 
 export default {
   name: "StartDrinkingSession",
@@ -262,16 +263,7 @@ export default {
 
     const showNotification = () => {
       state.notificationSound.play();
-      channel.postMessage({
-        action: "show-notification",
-      });
-      setTimeout(() => {
-        navigator.serviceWorker.ready.then((register) => {
-          register.showNotification("Testing", {
-            body: "QWEQWE",
-          });
-        }, 2000);
-      });
+      NotificationHandler.drinkReminder();
 
       setTimeout(() => {
         clearAllNotifications();
@@ -279,9 +271,7 @@ export default {
     };
 
     const clearAllNotifications = () => {
-      channel.postMessage({
-        action: "clear-notifications",
-      });
+      NotificationHandler.clearNotifcations();
     };
 
     const onReportClose = () => {
