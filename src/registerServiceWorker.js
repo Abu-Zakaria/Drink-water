@@ -2,8 +2,8 @@
 
 import { register } from "register-service-worker";
 
-var x = true;
-if (process.env.NODE_ENV === "production" || x) {
+let updated = false;
+if (process.env.NODE_ENV === "production") {
   register(`${process.env.BASE_URL}service-worker.js`, {
     ready() {
       console.log(
@@ -13,6 +13,13 @@ if (process.env.NODE_ENV === "production" || x) {
     },
     registered() {
       console.log("Service worker has been registered.");
+
+      if (updated) {
+        const channel = new BroadcastChannel("drink-water");
+        channel.postMessage({
+          action: "updating-files",
+        });
+      }
     },
     cached() {
       console.log("Content has been cached for offline use.");
@@ -22,6 +29,7 @@ if (process.env.NODE_ENV === "production" || x) {
     },
     updated() {
       console.log("New content is available; please refresh.");
+      updated = true;
     },
     offline() {
       console.log(

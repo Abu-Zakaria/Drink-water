@@ -58,11 +58,13 @@ const getRandomQuote = () => {
 const channel = new BroadcastChannel('drink-water');
 
 channel.onmessage = (message) => {
+    const icon = "/img/logo.png";
+
     if (message.data.action === "show-notification") {
         const quote = getRandomQuote();
         const options = {
             body: quote,
-            icon: "/img/logo.png",
+            icon: icon,
             vibrate: [200, 100, 100, 100, 400],
             actions: [
                 {
@@ -81,6 +83,14 @@ channel.onmessage = (message) => {
                 notification.close();
             });
         });
+    } else if (message.data.action === 'updating-files') {
+        const options = {
+            body: "Some new features are available now 😁",
+            icon: icon
+        }
+        const title = "Installing updates";
+
+        self.registration.showNotification(title, options);
     }
 }
 
