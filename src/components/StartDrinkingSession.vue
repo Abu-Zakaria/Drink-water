@@ -1,6 +1,11 @@
 <template>
   <div name="start_drinking_session">
-    <h2 id="start_session_heading" class="align-center" v-if="state.stage == 1">
+    <h2
+      id="start_session_heading"
+      class="text-center animate__animated"
+      v-if="state.stage == 1"
+      :class="{ animate__fadeOut: state.sessionStatus == 'started' }"
+    >
       Start your drinking session
     </h2>
     <h2
@@ -38,19 +43,13 @@
       <p>You've drank {{ state.totalSipsTaken }} times</p>
     </div>
     <div v-if="state.stage == 3">
-      <div class="align-center">
-        <h2>Well Done</h2>
-      </div>
-
-      <div class="align-center">
-        <p>In your last drinking session</p>
-      </div>
-      <div>
-        <h3 class="align-center">You drank {{ state.totalSipsTaken }} times</h3>
-        <h3 class="align-center">
-          You missed {{ state.missedReminders }} times
-        </h3>
-      </div>
+      <DrinkingSessionReport
+        :totalSipsTaken="
+          Math.floor(state.totalSipsRequired - state.missedReminders)
+        "
+        :missedReminders="state.missedReminders"
+        @close="onReportClose"
+      />
     </div>
 
     <div v-if="state.sessionStatus == 'pending'">
@@ -79,15 +78,21 @@
 <script>
 import { reactive } from "vue";
 import moment from "moment";
+import DrinkingSessionReport from "./DrinkingSessionReport.vue";
 
 export default {
   name: "StartDrinkingSession",
   props: [],
+  components: {
+    DrinkingSessionReport,
+  },
   setup() {
     const state = reactive({
       sessionStatus: "stopped",
       stage: 1,
-      perSipDelay: 1,
+      perSipDelay: 0.2, // minute
+      totalSipsPerSessions: 3,
+      sessionLength: null, // seconds
       totalSipsTaken: Number(
         window.localStorage.getItem("total_sips_taken") ?? 0
       ),
@@ -98,14 +103,21 @@ export default {
       ),
       timestampCursor: null,
       next_reminder_diff: null,
-      timeoutForDrink: 30,
+      timeoutForDrink: 4, // seconds
       tookSipBtnStatus: null,
+      startClickSound: new Audio(
+        require("@/assets/sounds/start-button-clicked.mp3")
+      ),
+      notificationSound: new Audio(
+        require("@/assets/sounds/notification-sound.mp3")
+      ),
+      defaults: {
+        timeoutForDrink: 4,
+      },
     });
+    state.sessionLength = state.totalSipsPerSessions * state.perSipDelay * 60;
 
-    state.totalSipsRequired = 60 / state.perSipDelay;
-    state.endingTime = state.startingTime
-      ? Number(state.startingTime) + 60 * 60
-      : null;
+    state.totalSipsRequired = state.sessionLength / (state.perSipDelay * 60);
 
     const channel = new BroadcastChannel("drink-water");
 
@@ -119,43 +131,40 @@ export default {
 
     const startSession = () => {
       state.sessionStatus = "started";
+      state.startClickSound.play();
 
       setTimeout(() => {
         state.stage = 2;
 
-        checkForStatus();
-      }, 400);
+        const now = Number(moment().format("X"));
+        window.localStorage.setItem("starting_time", now);
+        state.startingTime = now;
+        const next_reminder = moment().add(state.perSipDelay, "minute");
 
-      window.localStorage.setItem(
-        "starting_time",
-        Number(moment().format("X"))
-      );
-      state.startingTime = Number(moment().format("X"));
-      const next_reminder = moment().add(state.perSipDelay, "minute");
-      window.localStorage.setItem(
-        "next_reminder",
-        Number(next_reminder.format("X"))
-      );
+        window.localStorage.setItem(
+          "next_reminder",
+          Number(next_reminder.format("X"))
+        );
+
+        refreshEndingTime();
+      }, 1000);
     };
 
     const checkForStatus = () => {
-      const next_reminder = window.localStorage.getItem("next_reminder");
+      if (state.tookSipBtnStatus == "pending") return;
       const now = moment();
 
       if (state.endingTime && Number(now.format("X")) > state.endingTime) {
         state.sessionStatus = "finished";
         state.stage = 3;
-        showSessionReport();
         return;
       }
+      if (state.stage == 1) return;
+
+      const next_reminder = window.localStorage.getItem("next_reminder");
 
       if (state.startingTime && next_reminder) {
-        state.sessionStatus = "started";
-        state.stage = 2;
-
-        setInterval(() => {
-          if (state.sessionStatus == "started") checkForCurrentReminder();
-        }, 1000);
+        checkForCurrentReminder();
       }
     };
 
@@ -223,7 +232,7 @@ export default {
     const resetReminderTimer = () => {
       clearInterval(reminderTimer);
 
-      state.timeoutForDrink = 30;
+      state.timeoutForDrink = state.defaults.timeoutForDrink;
       state.timestampCursor = null;
 
       setTimeout(() => {
@@ -231,8 +240,6 @@ export default {
         state.tookSipBtnStatus = null;
       }, 3000);
     };
-
-    const showSessionReport = () => {};
 
     const tookASip = () => {
       state.tookSipBtnStatus = "done";
@@ -252,8 +259,7 @@ export default {
     };
 
     const showNotification = () => {
-      console.log("sending notification");
-      const channel = new BroadcastChannel("drink-water");
+      state.notificationSound.play();
       channel.postMessage({
         action: "show-notification",
       });
@@ -264,21 +270,35 @@ export default {
     };
 
     const clearAllNotifications = () => {
-      navigator.serviceWorker.ready.then((registration) => {
-        registration.getNotifications().then((notifications) => {
-          notifications.forEach((notification) => {
-            notification.close();
-          });
-        });
+      channel.postMessage({
+        action: "clear-notifications",
       });
     };
 
+    const onReportClose = () => {
+      window.localStorage.clear();
+      window.location.href = "/";
+    };
+
+    const refreshEndingTime = () => {
+      state.endingTime = state.startingTime
+        ? Number(state.startingTime) + state.sessionLength
+        : null;
+    };
+
+    refreshEndingTime();
+
     checkForStatus();
+
+    setInterval(() => {
+      checkForStatus();
+    }, 1000);
 
     return {
       state,
       startSession,
       tookASip,
+      onReportClose,
     };
   },
 };
@@ -287,21 +307,28 @@ export default {
 <style>
 .start-button {
   border-radius: 50%;
-  height: 122px;
-  width: 130px;
+  height: 172px;
+  width: 180px;
   font-size: 22px;
   box-shadow: 0 0px 0px 0px rgb(15 31 39);
   transition: all 0.4s;
-  border-color: #ffffff55 !important;
+  border-color: #00ffff !important;
+  font-weight: normal;
 }
 
 .start-button:hover {
-  box-shadow: 0 2px 3px 5px rgb(15 31 39);
+  box-shadow: 0 0px 0px 15px rgb(13 172 254 / 24%);
 }
 
-#start_session_heading {
-  z-index: 3;
+.start-button:focus {
+  box-shadow: 0 0px 0px 15px rgba(13 172 254 / 45%);
 }
+
+/* #start_session_heading,
+#running_session_heading {
+  z-index: 3;
+  margin-top: 48px;
+} */
 
 #start_session_btn {
   z-index: 2;

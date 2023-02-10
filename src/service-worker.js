@@ -79,7 +79,13 @@ channel.onmessage = (message) => {
 
         setTimeout(() => {
             channel.postMessage('clear-notifications');
-        }, 29900);
+        }, timeout);
+    } else if (message.data.action === 'clear-notifications') {
+        self.registration.getNotifications().then(notifications => {
+            notifications.forEach(notification => {
+                notification.close();
+            });
+        });
     }
 }
 
