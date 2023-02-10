@@ -29,6 +29,11 @@ const getRandomQuote = () => {
     return quotes[randomIndex];
 }
 
+const defaultNotificationConfig = {
+    silent: false,
+    requireInteraction: true,
+};
+
 export default {
     drinkReminder: () => {
         const quote = getRandomQuote();
@@ -43,6 +48,7 @@ export default {
                     type: "button",
                 },
             ],
+            ...defaultNotificationConfig,
         };
         const title = "Time to take a sip";
 
@@ -62,7 +68,8 @@ export default {
     updatingFiles: () => {
         const options = {
             body: "Some new features are available now 😁",
-            icon: icon
+            icon: icon,
+            ...defaultNotificationConfig,
         }
         const title = "Installing updates";
 
@@ -72,7 +79,8 @@ export default {
     },
     installed: () => {
         const options = {
-            icon: icon
+            icon: icon,
+            ...defaultNotificationConfig,
         }
         const title = "Installation successful! ✌️";
 
