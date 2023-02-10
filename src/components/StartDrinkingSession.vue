@@ -104,7 +104,7 @@ export default {
       ),
       timestampCursor: null,
       next_reminder_diff: null,
-      timeoutForDrink: 4, // seconds
+      timeoutForDrink: 20, // seconds
       tookSipBtnStatus: null,
       startClickSound: new Audio(
         require("@/assets/sounds/start-button-clicked.mp3")
@@ -113,7 +113,7 @@ export default {
         require("@/assets/sounds/notification-sound.mp3")
       ),
       defaults: {
-        timeoutForDrink: 4,
+        timeoutForDrink: 20,
       },
     });
     state.sessionLength = state.totalSipsPerSessions * state.perSipDelay * 60;
@@ -131,6 +131,9 @@ export default {
     };
 
     const startSession = () => {
+      if (Notification.permission != "granted") {
+        Notification.requestPermission();
+      }
       state.sessionStatus = "started";
       state.startClickSound.play();
 
@@ -160,11 +163,11 @@ export default {
         state.stage = 3;
         return;
       }
-      if (state.stage == 1) return;
 
       const next_reminder = window.localStorage.getItem("next_reminder");
 
       if (state.startingTime && next_reminder) {
+        state.stage = 2;
         checkForCurrentReminder();
       }
     };
