@@ -265,6 +265,13 @@ export default {
       channel.postMessage({
         action: "show-notification",
       });
+      setTimeout(() => {
+        navigator.serviceWorker.ready.then((register) => {
+          register.showNotification("Testing", {
+            body: "QWEQWE",
+          });
+        }, 2000);
+      });
 
       setTimeout(() => {
         clearAllNotifications();
