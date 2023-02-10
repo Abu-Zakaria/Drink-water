@@ -33,7 +33,8 @@
     </div>
     <div v-if="state.stage == 2" class="">
       <p class="animate__animated animate__fadeIn">
-        Next reminder to drink water: {{ state.next_reminder_diff }}
+        Next reminder to drink water:
+        {{ parseNextReminder(state.next_reminder_diff) }}
       </p>
       <p class="animate__animated animate__fadeIn">
         Now go back to work/study!
@@ -90,8 +91,8 @@ export default {
     const state = reactive({
       sessionStatus: "stopped",
       stage: 1,
-      perSipDelay: 0.2, // minute
-      totalSipsPerSessions: 3,
+      perSipDelay: 2, // minute
+      totalSipsPerSessions: 5,
       sessionLength: null, // seconds
       totalSipsTaken: Number(
         window.localStorage.getItem("total_sips_taken") ?? 0
@@ -266,7 +267,7 @@ export default {
 
       setTimeout(() => {
         clearAllNotifications();
-      }, 29900);
+      }, state.defaults.timeoutForDrink);
     };
 
     const clearAllNotifications = () => {
@@ -286,6 +287,25 @@ export default {
         : null;
     };
 
+    const parseNextReminder = (time) => {
+      time = Number(time);
+      const minutes = Math.floor(time / 60);
+      const seconds = time - minutes * 60;
+
+      console.log("minutes: ", minutes);
+      console.log("seconds: ", seconds);
+
+      let nextReminder = "";
+      if (minutes > 0) {
+        nextReminder += minutes + " minutes";
+      }
+      if (seconds > 0) {
+        if (minutes) nextReminder += " ";
+        nextReminder += seconds + " seconds";
+      }
+      return nextReminder;
+    };
+
     refreshEndingTime();
 
     checkForStatus();
@@ -299,6 +319,7 @@ export default {
       startSession,
       tookASip,
       onReportClose,
+      parseNextReminder,
     };
   },
 };

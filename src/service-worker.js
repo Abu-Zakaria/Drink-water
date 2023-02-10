@@ -55,7 +55,6 @@ const getRandomQuote = () => {
     return quotes[randomIndex];
 }
 
-const timeout = 30000; // timeout for confirming that the user has taken a sip of drink
 const channel = new BroadcastChannel('drink-water');
 
 channel.onmessage = (message) => {
@@ -76,10 +75,6 @@ channel.onmessage = (message) => {
         const title = "Time to take a sip";
 
         self.registration.showNotification(title, options);
-
-        setTimeout(() => {
-            channel.postMessage('clear-notifications');
-        }, timeout);
     } else if (message.data.action === 'clear-notifications') {
         self.registration.getNotifications().then(notifications => {
             notifications.forEach(notification => {
