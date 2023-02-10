@@ -3,7 +3,7 @@ module.exports = defineConfig({
   transpileDependencies: true,
   pwa: {
     name: "Drink water",
-    themeColor: "#045178",
+    themeColor: "#00293d",
     workboxPluginMode: "InjectManifest",
     workboxOptions: {
       swSrc: "./src/service-worker.js"
