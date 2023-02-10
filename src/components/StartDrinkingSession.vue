@@ -297,11 +297,13 @@ export default {
 
       let nextReminder = "";
       if (minutes > 0) {
-        nextReminder += minutes + " minutes";
+        nextReminder += minutes + " minute";
+        if (minutes > 1) nextReminder += "s";
       }
       if (seconds > 0) {
         if (minutes) nextReminder += " ";
-        nextReminder += seconds + " seconds";
+        nextReminder += seconds + " second";
+        if (seconds > 1) nextReminder += "s";
       }
       return nextReminder;
     };
