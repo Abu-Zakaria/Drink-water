@@ -91,8 +91,8 @@ export default {
     const state = reactive({
       sessionStatus: "stopped",
       stage: 1,
-      perSipDelay: 1, // minute
-      totalSipsPerSessions: 3,
+      perSipDelay: 5, // minute
+      totalSipsPerSessions: 12,
       sessionLength: null, // seconds
       totalSipsTaken: Number(
         window.localStorage.getItem("total_sips_taken") ?? 0

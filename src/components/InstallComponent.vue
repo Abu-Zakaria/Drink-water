@@ -18,6 +18,8 @@ export default {
       defferedPrompt: null,
     });
 
+    const channel = new BroadcastChannel("drink-water");
+
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
 
@@ -43,6 +45,9 @@ export default {
 
       if (outcome == "accepted") {
         state.installed = true;
+        channel.postMessage({
+          action: "installed",
+        });
       }
     };
 

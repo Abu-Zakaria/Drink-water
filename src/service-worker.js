@@ -91,6 +91,13 @@ channel.onmessage = (message) => {
         const title = "Installing updates";
 
         self.registration.showNotification(title, options);
+    } else if (message.data.action === 'installed') {
+        const options = {
+            icon: icon
+        }
+        const title = "Installation successful! ✌️";
+
+        self.registration.showNotification(title, options);
     }
 }
 
